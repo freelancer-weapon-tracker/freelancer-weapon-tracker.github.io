@@ -1,4 +1,10 @@
 const locations = {
+  "Showdowns - All Locations": [
+    {
+      "name": "Assassin's HWK21 Covert",
+      "description": "Carried by assassins"
+    }
+  ],
   "Ambrose Island": [
     {
       "name": "Bartoli 12G Short H",

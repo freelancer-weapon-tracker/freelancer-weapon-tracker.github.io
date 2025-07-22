@@ -136,6 +136,8 @@ const weaponsData = {
     },
     "Tanto": {
         "rarity": "Rare"
+    },
+    "Assassin's HWK21 Covert": {
+        "rarity": "Rare"
     }
 };
-ol 

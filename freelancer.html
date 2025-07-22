@@ -68,11 +68,6 @@
   </div>
 
   <script>
-    /*
-      todo
-      make coloring better to show what tab is selected
-      reset tools on weapon change
-    */
     let collectedWeapons = [];
     let showCollected = false;
     let selectedRarities = new Set(["legendary", "epic", "rare", "common", "tool"]);
@@ -98,7 +93,13 @@
     function renderLocations() {
       const locationsContainer = document.getElementById('locations');
       locationsContainer.innerHTML = '';
-      Object.keys(locations).forEach(location => {
+      // Sort locations so "Showdowns - All Locations" is always first
+      const locationNames = Object.keys(locations).sort((a, b) => {
+        if (a === "Showdowns - All Locations") return -1;
+        if (b === "Showdowns - All Locations") return 1;
+        return a.localeCompare(b);
+      });
+      locationNames.forEach(location => {
         let weapons = locations[location];
         weapons.sort((a, b) => {
           const rarityA = weaponsData[a.name].rarity;
@@ -424,7 +425,6 @@
       closeResetMenu();
       const filterMenu = document.querySelector('.filter-menu-container');
       const filterButton = document.querySelector('.filter-button');
-      //filterMenu.classList.toggle('open');
       let expandedMaxHeight = filterMenu.scrollHeight + 'px';
       if (filterMenu.style.maxHeight !== expandedMaxHeight) {
         filterMenu.style.maxHeight = filterMenu.scrollHeight + 'px';
@@ -495,7 +495,6 @@
     function saveState() {
       localStorage.setItem('collectedWeapons', JSON.stringify(collectedWeapons));
 
-      // Save the settings
       const settings = {
         showCollected: showCollected,
         selectedRarities: Array.from(selectedRarities),
@@ -506,7 +505,6 @@
     function loadState() {
       collectedWeapons = JSON.parse(localStorage.getItem('collectedWeapons')) || [];
 
-      // Load the settings
       const settings = JSON.parse(localStorage.getItem('settings'));
       if (settings) {
         showCollected = settings.showCollected;
@@ -517,7 +515,6 @@
         });
       };
 
-      // Apply settings to the UI
       renderLocations();
       renderWeapons();
       renderRarityCounters();
