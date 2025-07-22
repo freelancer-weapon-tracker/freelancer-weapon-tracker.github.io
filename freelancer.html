@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hitman Freelancer Weapon Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="locations.js"></script>
+  <script src="weapons.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="title">Hitman Freelancer Weapon&nbsp;Tracker</h1>
+    <div class="button-container">
+      <button class="filter-button" onclick="toggleSettingsMenu()">Settings</button>
+      <div id="collected-count"></div>
+      <button class="reset-btn" onclick="toggleResetMenu()">Reset</button>
+    </div>
+    <div class="filter-container">
+      <div class="filter-menu-container">
+        <div class="filter-menu">
+          <div class="filters-section">
+            <div class="section-title">Filtering</div>
+            <label><input type="checkbox" id="showCollectedCheckbox" onchange="toggleShowCollected()"> Show Collected
+              Weapons</label>
+          </div>
+          <div class="filters-section">
+            <div class="section-title">Displayed Types/Rarities</div>
+            <label><input type="checkbox" data-rarity="tool" checked onchange="updateRarities()"> Freelancer
+              Tools</label>
+            <label><input type="checkbox" data-rarity="common" checked onchange="updateRarities()"> Common</label>
+            <label><input type="checkbox" data-rarity="rare" checked onchange="updateRarities()"> Rare</label>
+            <label><input type="checkbox" data-rarity="epic" checked onchange="updateRarities()"> Epic</label>
+            <label><input type="checkbox" data-rarity="legendary" checked onchange="updateRarities()"> Legendary</label>
+          </div>
+          <div class="filters-section">
+            <div class="section-title">UI</div>
+            <label><input type="checkbox" id="darkModeCheckbox">Dark Mode</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reset-menu-container">
+      <div class="reset-menu">
+        <div class="section-title">Reset Options</div>
+        <div class="reset-menu-buttons">
+          <button data-reset-type="tools" onclick="confirmReset(this)">Reset Only<br />Freelancer Tools</button>
+          <button data-reset-type="all" onclick="confirmReset(this)">Reset <b><u>ALL</u></b><br />Weapons and
+            Tools</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('locations')">Weapons <span class="subword">By Location</span></div>
+      <div class="tab" onclick="showTab('weapons')">Weapons Individually</div>
+    </div>
+    <div id="locations" class="tab-content active"></div>
+    <div id="weapons" class="tab-content"></div>
+    <div class="done-container tab-content hidden">
+      <div>All weapons collected.</div>
+      <div id="hidden-rarities"></div>
+      <br>
+      <div>Use the <b>Reset</b> menu to reset.</div>
+    </div>
+  </div>
+
+  <script>
+    /*
+      todo
+      make coloring better to show what tab is selected
+      reset tools on weapon change
+    */
+    let collectedWeapons = [];
+    let showCollected = false;
+    let selectedRarities = new Set(["legendary", "epic", "rare", "common", "tool"]);
+    const rarityOrder = {
+      legendary: 1,
+      epic: 2,
+      rare: 3,
+      common: 4,
+      tool: 5,
+    };
+
+    function showTab(tab) {
+      let tabElement = document.getElementById(tab);
+      if (tabElement.classList.contains('active')) {
+        return;
+      }
+      document.querySelectorAll('.tab').forEach(tabBtn => tabBtn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+      document.getElementById(tab).classList.add('active');
+    }
+
+    function renderLocations() {
+      const locationsContainer = document.getElementById('locations');
+      locationsContainer.innerHTML = '';
+      Object.keys(locations).forEach(location => {
+        let weapons = locations[location];
+        weapons.sort((a, b) => {
+          const rarityA = weaponsData[a.name].rarity;
+          const rarityB = weaponsData[b.name].rarity;
+          const rarityComparison = getRarityOrder(rarityA) - getRarityOrder(rarityB);
+          if (rarityComparison !== 0) {
+            return rarityComparison;
+          }
+          return a.name.localeCompare(b.name);
+        });
+
+        let accordionButton = document.createElement('button');
+        accordionButton.className = 'accordion';
+        accordionButton.dataset.location = location;
+
+        let locationNameSpan = document.createElement('span');
+        locationNameSpan.textContent = location;
+        locationNameSpan.className = 'location-name'
+        accordionButton.appendChild(locationNameSpan);
+
+        let rarityDiv = document.createElement('div');
+        rarityDiv.className = 'rarity-indicator';
+        accordionButton.appendChild(rarityDiv);
+
+        accordionButton.onclick = function () {
+          togglePanel(this);
+        };
+
+        let panelDiv = document.createElement('div');
+        panelDiv.className = 'panel';
+        weapons.forEach(weapon => {
+          let weaponData = weaponsData[weapon.name];
+          let weaponDiv = document.createElement('div');
+          weaponDiv.className = 'weapon' + (collectedWeapons.includes(weapon.name) ? ' collected' : '');
+          weaponDiv.dataset.weapon = weapon.name;
+          weaponDiv.onclick = () => toggleWeapon(weapon.name);
+
+          let rarityRectangle = document.createElement('div');
+          rarityRectangle.className = 'rarity-rectangle-weapon ' + weaponData.rarity.toLowerCase();
+
+          let weaponInfoDiv = document.createElement('div');
+          weaponInfoDiv.className = 'weapon-info';
+
+          let weaponNameSpan = document.createElement('span');
+          weaponNameSpan.className = 'weapon-name';
+          weaponNameSpan.textContent = weapon.name;
+
+          let placeholderValueSpan = document.createElement('span');
+          placeholderValueSpan.className = 'weapon-value';
+          placeholderValueSpan.textContent = `${weaponData.value} M ● ${weaponData.locations.length} Maps`;
+
+          let rightRarityRectangle = document.createElement('div');
+          rightRarityRectangle.className = 'rarity-rectangle-weapon right ' + weaponData.rarity.toLowerCase();
+
+          weaponInfoDiv.appendChild(weaponNameSpan);
+
+          weaponDiv.appendChild(rarityRectangle);
+          weaponDiv.appendChild(weaponInfoDiv);
+          weaponDiv.appendChild(createDescriptionSpan(weapon.description));
+          weaponDiv.appendChild(rightRarityRectangle);
+
+          panelDiv.appendChild(weaponDiv);
+        });
+        locationsContainer.appendChild(accordionButton);
+        locationsContainer.appendChild(panelDiv);
+      });
+      updateVisibility();
+      renderRarityCounters();
+      renderCollectedCount();
+    }
+
+    function renderWeapons() {
+      const weaponsContainer = document.getElementById('weapons');
+      weaponsContainer.innerHTML = '';
+      Object.keys(weaponsData).forEach(weaponName => {
+        let weaponData = weaponsData[weaponName];
+
+        let weaponDiv = document.createElement('div');
+        weaponDiv.className = 'weapon' + (collectedWeapons.includes(weaponName) ? ' collected' : '');
+        weaponDiv.dataset.weapon = weaponName;
+        weaponDiv.onclick = () => toggleWeapon(weaponName, weaponDiv);
+
+        let rarityRectangle = document.createElement('div');
+        rarityRectangle.className = 'rarity-rectangle-weapon ' + weaponData.rarity.toLowerCase();
+
+        let weaponInfoDiv = document.createElement('div');
+        weaponInfoDiv.className = 'weapon-info';
+
+        let weaponNameSpan = document.createElement('span');
+        weaponNameSpan.className = 'weapon-name';
+        weaponNameSpan.textContent = weaponName;
+
+        let placeholderValueSpan = document.createElement('span');
+        placeholderValueSpan.className = 'weapon-value';
+        placeholderValueSpan.textContent = `${weaponData.value} M ● Avail. 2 other destinations`;
+
+        weaponInfoDiv.appendChild(weaponNameSpan);
+        //weaponInfoDiv.appendChild(placeholderValueSpan);
+
+        let locationsSpan = document.createElement('span');
+        locationsSpan.className = 'description';
+        locationsSpan.textContent = weaponsData[weaponName].locations.join(' | ');
+
+        weaponDiv.appendChild(rarityRectangle);
+        weaponDiv.appendChild(weaponInfoDiv);
+        weaponDiv.appendChild(locationsSpan);
+
+        weaponsContainer.appendChild(weaponDiv);
+      });
+      updateVisibility();
+      renderCollectedCount();
+    }
+
+    function createDescriptionSpan(description) {
+      let descriptionSpan = document.createElement('span');
+      descriptionSpan.className = 'description';
+      const parts = description.split(';');
+      parts.forEach(part => {
+        const trimmedPart = part.trim();
+        if (trimmedPart) {
+          const line = document.createElement('div');
+          line.textContent = `• ${trimmedPart}`;
+          descriptionSpan.appendChild(line);
+        }
+      });
+      return descriptionSpan;
+    }
+
+    function togglePanel(accordion) {
+      let panel = accordion.nextElementSibling;
+      let isOpen = accordion.classList.contains('active');
+
+      document.querySelectorAll('.accordion').forEach(accordion => accordion.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(panel => panel.style.maxHeight = null);
+
+      if (!isOpen) {
+        accordion.classList.add('active');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    }
+
+    let justSelectedWeapon = false;
+    function toggleWeapon(weaponName) {
+      if (justSelectedWeapon) {
+        return;
+      }
+      justSelectedWeapon = true;
+      const weaponDivs = document.querySelectorAll(`div[data-weapon="${weaponName}"]`);
+      weaponDivs.forEach(weaponDiv => {
+        if (!weaponDiv.classList.contains('collected')) {
+          weaponDiv.classList.add('collected');
+        } else {
+          weaponDiv.classList.remove('collected');
+        }
+      });
+      if (collectedWeapons.includes(weaponName)) {
+        collectedWeapons = collectedWeapons.filter(weapon => weapon !== weaponName);
+      } else {
+        collectedWeapons.push(weaponName);
+      }
+      saveState();
+      setTimeout(function () {
+        justSelectedWeapon = false;
+        renderRarityCounters();
+        updateVisibility();
+      }, 500);
+      renderCollectedCount();
+    }
+
+
+    function confirmReset(button) {
+      var resetType = button.dataset.resetType;
+      let message = resetType === "tools" ?
+        "Are you sure you want to reset your collection for all freelancer tools? Weapons will be unaffected." :
+        "Are you sure you want to reset your collection for all weapons and freelancer tools?"
+      if (confirm(message)) {
+        if (resetType === "tools") {
+          collectedWeapons = collectedWeapons.filter(weaponName => weaponsData[weaponName].rarity.toLowerCase() !== "tool");
+        } else {
+          collectedWeapons = [];
+        }
+        saveState();
+        closeResetMenu();
+        renderLocations();
+        renderWeapons();
+      }
+    }
+
+    function toggleFilterMenu() {
+      const filterMenu = document.querySelector('.filters');
+      filterMenu.classList.toggle('active');
+    }
+
+    function updateVisibility() {
+      let allWeaponsCollected = true;
+      document.querySelectorAll('.weapon').forEach(weaponDiv => {
+        let weaponName = weaponDiv.querySelector('.weapon-name').textContent;
+        let weaponData = weaponsData[weaponName];
+        let weaponRarity = weaponData.rarity.toLowerCase();
+        if (collectedWeapons.includes(weaponName) && !showCollected) {
+          weaponDiv.classList.add('hidden');
+        } else if (selectedRarities.has(weaponRarity)) {
+          weaponDiv.classList.remove('hidden');
+        } else {
+          weaponDiv.classList.add('hidden');
+        }
+        if (selectedRarities.has(weaponRarity) && !collectedWeapons.includes(weaponName)) {
+          allWeaponsCollected = false;
+        }
+      });
+
+      // Hide locations with no visible weapons
+      document.querySelectorAll('.accordion').forEach(accordion => {
+        let location = accordion.dataset.location;
+        let weaponsInLocation = locations[location];
+        let panel = accordion.nextElementSibling;
+        let visibleWeapons = Array.from(panel.children).filter(weaponDiv => !weaponDiv.classList.contains('hidden'));
+        let hasInScopeWeapons = weaponsInLocation.some(weapon => selectedRarities.has(weaponsData[weapon.name].rarity.toLowerCase()));
+        if (!hasInScopeWeapons || (visibleWeapons.length === 0 && !showCollected)) {
+          accordion.classList.add('hidden');
+          panel.style.maxHeight = null;
+        } else {
+          accordion.classList.remove('hidden');
+        }
+      });
+
+      document.querySelectorAll('.done-container').forEach(container => {
+        if (allWeaponsCollected && !showCollected) {
+          container.classList.remove('hidden');
+        } else {
+          container.classList.add('hidden');
+        }
+      })
+
+      let totalWeaponsCount = 0;
+      let collectedWeaponsCount = 0;
+      collectedWeapons.forEach((collectedWeapon) => {
+        if (!selectedRarities.has(collectedWeapon.rarity)) {
+          return;
+        }
+        collectedWeaponsCount++;
+      });
+
+      const hiddenRaritiesElement = document.getElementById('hidden-rarities');
+      let hiddenRarities = [];
+      document.querySelectorAll('[data-rarity]').forEach(checkbox => {
+        if (!checkbox.checked) {
+          hiddenRarities.push(checkbox.dataset.rarity);
+        }
+      });
+      if (hiddenRarities.length > 0) {
+        hiddenRaritiesElement.textContent = `(Hidden Types/Rarities: ${hiddenRarities.join(', ')})`;
+      } else {
+        hiddenRaritiesElement.textContent = '';
+      }
+    }
+
+    function toggleShowCollected() {
+      showCollected = !showCollected;
+      document.body.classList.toggle("show-collected-weapons", showCollected);
+      saveState();
+      updateVisibility();
+    }
+
+    function renderRarityCounters() {
+      // Clear existing rarity indicators
+      document.querySelectorAll('.rarity-indicator').forEach(indicator => indicator.innerHTML = '');
+
+      // Loop through each location
+      Object.keys(locations).forEach(locationName => {
+        const rarityIndicators = document.querySelector(`.accordion[data-location="${locationName}"] .rarity-indicator`);
+        const weaponsInLocation = locations[locationName];
+
+        // Initialize counts
+        const collected = collectedWeapons.filter(w => weaponsInLocation.some(weapon => weapon.name === w));
+        const totalRarityCounts = {};
+        const remainingRarityCounts = {};
+
+        Object.keys(rarityOrder).forEach(rarity => {
+          totalRarityCounts[rarity] = 0;
+          remainingRarityCounts[rarity] = 0;
+        });
+
+        // Calculate counts
+        weaponsInLocation.forEach(weapon => {
+          const weaponData = weaponsData[weapon.name];
+          if (!weaponData || !weaponData.rarity) {
+            throw new Error(`Weapon ${weapon.name} in location ${locationName} is missing a rarity.`);
+          }
+
+          const rarity = weaponData.rarity.toLowerCase();
+          if (!selectedRarities.has(rarity)) return;
+
+          totalRarityCounts[rarity]++;
+          if (!collected.includes(weapon.name)) {
+            remainingRarityCounts[rarity]++;
+          }
+        });
+        // Render rarity indicators
+        const sortedRarities = Object.keys(totalRarityCounts).sort((a, b) => getRarityOrder(a) - getRarityOrder(b));
+        rarityIndicators.innerHTML = sortedRarities.filter(rarity => remainingRarityCounts[rarity] > 0).map(rarity => {
+          const count = remainingRarityCounts[rarity];
+          return `<div class="rarity-rectangle-location ${rarity}">${count}</div>`;
+        }).join('');
+      });
+    }
+
+
+    function updateRarities() {
+      selectedRarities = new Set();
+      document.querySelectorAll('[data-rarity]').forEach(checkbox => {
+        if (checkbox.checked) {
+          selectedRarities.add(checkbox.dataset.rarity);
+        }
+      });
+      saveState();
+      updateVisibility();
+      renderRarityCounters();
+      renderCollectedCount();
+    }
+
+    function toggleSettingsMenu() {
+      closeResetMenu();
+      const filterMenu = document.querySelector('.filter-menu-container');
+      const filterButton = document.querySelector('.filter-button');
+      //filterMenu.classList.toggle('open');
+      let expandedMaxHeight = filterMenu.scrollHeight + 'px';
+      if (filterMenu.style.maxHeight !== expandedMaxHeight) {
+        filterMenu.style.maxHeight = filterMenu.scrollHeight + 'px';
+        filterButton.textContent = 'Hide Settings';
+      } else {
+        closeSettingsMenu(filterMenu, filterButton);
+      }
+    }
+
+    function closeSettingsMenu(filterMenu, filterButton) {
+      filterMenu = filterMenu || document.querySelector('.filter-menu-container');
+      filterButton = filterButton || document.querySelector('.filter-button');
+      filterMenu.style.maxHeight = '0';
+      filterButton.textContent = 'Settings';
+    }
+
+    function toggleResetMenu() {
+      closeSettingsMenu();
+      const resetMenuContainer = document.querySelector('.reset-menu-container');
+      const resetButton = document.querySelector('.reset-btn');
+      let expandedMaxHeight = resetMenuContainer.scrollHeight + 'px';
+      if (resetMenuContainer.style.maxHeight !== expandedMaxHeight) {
+        resetMenuContainer.style.maxHeight = resetMenuContainer.scrollHeight + 'px';
+        resetButton.textContent = 'Hide Reset';
+      } else {
+        closeResetMenu(resetMenuContainer, resetButton);
+      }
+    }
+
+    function closeMenus() {
+      closeResetMenu();
+      closeSettingsMenu();
+    }
+
+    function closeResetMenu(resetMenuContainer, resetButton) {
+      resetMenuContainer = resetMenuContainer || document.querySelector('.reset-menu-container');
+      resetButton = resetButton || document.querySelector('.reset-btn');
+      resetMenuContainer.style.maxHeight = '0';
+      resetButton.textContent = 'Reset';
+    }
+
+    function renderCollectedCount() {
+      const totalWeapons = Object.values(weaponsData).filter(weaponData => selectedRarities.has(weaponData.rarity.toLowerCase())).length;
+      const collectedCount = collectedWeapons.filter(weaponName => selectedRarities.has(weaponsData[weaponName].rarity.toLowerCase())).length;
+      document.getElementById('collected-count').innerHTML = `<b>Collected</b><br/>${collectedCount}/${totalWeapons}`;
+    }
+
+    function initializeWeaponsData() {
+      Object.keys(weaponsData).forEach(weaponName => {
+        let weaponData = weaponsData[weaponName];
+        weaponData.locations = [];
+        Object.keys(locations).forEach(location => {
+          if (locations[location].some(weapon => weapon.name === weaponName)) {
+            weaponData.locations.push(location);
+          }
+        });
+      });
+      Object.keys(locations).forEach(location => {
+        let weapons = locations[location];
+        weapons.forEach(weapon => {
+          if (!(weapon.name in weaponsData)) {
+            throw new Error("Weapon not recognized: " + weapon.name);
+          }
+        });
+      });
+    }
+
+    function saveState() {
+      localStorage.setItem('collectedWeapons', JSON.stringify(collectedWeapons));
+
+      // Save the settings
+      const settings = {
+        showCollected: showCollected,
+        selectedRarities: Array.from(selectedRarities),
+      };
+      localStorage.setItem('settings', JSON.stringify(settings));
+    }
+
+    function loadState() {
+      collectedWeapons = JSON.parse(localStorage.getItem('collectedWeapons')) || [];
+
+      // Load the settings
+      const settings = JSON.parse(localStorage.getItem('settings'));
+      if (settings) {
+        showCollected = settings.showCollected;
+        selectedRarities = new Set(settings.selectedRarities);
+        document.getElementById('showCollectedCheckbox').checked = showCollected || false;
+        document.querySelectorAll('[data-rarity]').forEach(checkbox => {
+          checkbox.checked = selectedRarities.has(checkbox.dataset.rarity)
+        });
+      };
+
+      // Apply settings to the UI
+      renderLocations();
+      renderWeapons();
+      renderRarityCounters();
+      renderCollectedCount();
+      updateVisibility();
+    }
+
+    function getRarityOrder(rarity) {
+      return rarityOrder[rarity.toLowerCase()];
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeTheme();
+      loadState();
+      renderLocations();
+      renderWeapons();
+    });
+
+    function initializeTheme() {
+      const checkbox = document.getElementById('darkModeCheckbox');
+
+      // Check if the user has a saved preference
+      const savedTheme = localStorage.getItem('theme');
+
+      if (savedTheme) {
+        document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+        checkbox.checked = (savedTheme === 'dark');
+      } else {
+        // Initialize based on system preference
+        const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.classList.toggle('dark-mode', prefersDarkMode);
+        checkbox.checked = prefersDarkMode;
+      }
+
+      // Toggle dark mode based on checkbox
+      checkbox.addEventListener('change', function () {
+        if (checkbox.checked) {
+          document.body.classList.add('dark-mode');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.body.classList.remove('dark-mode');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    }
+
+    initializeWeaponsData();
+  </script>
+</body>
+
+</html>

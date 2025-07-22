@@ -1,0 +1,356 @@
+body {
+    font-family: Arial, sans-serif;
+  }
+
+  body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+  }
+
+  .title {
+    text-align: center;
+  }
+
+  .collected-count {
+    color: gray;
+    text-align: center;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: auto;
+    padding: 4px;
+  }
+
+  .filter-menu {
+    padding: 10px;
+    border: 5px solid #ccc;
+  }
+
+  .filter-menu-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+  }
+
+  .filter-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .filters-section {
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .filters label {
+    margin-right: 10px;
+  }
+
+  .tabs {
+    display: flex;
+    margin-top: 10px;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    flex: 1;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .tab.active {
+    background-color: #eee;
+  }
+
+  .dark-mode .tab.active {
+    background-color: #222426;
+  }
+
+  .tab-content {
+    display: none;
+    border: 1px solid #ccc;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .weapon-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .weapon-value {
+    font-size: 0.8em;
+    color: rgb(168, 160, 149);
+    margin-top: 4px;
+  }
+
+  button.accordion {
+    background-color: #eee;
+    height: 40px;
+    color: #444;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    text-align: left;
+    font-size: 15px;
+    transition: background-color 0.4s ease;
+    border-radius: 5px;
+    margin-bottom: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #CCC;
+    border-left: none;
+    border-right: none;
+  }
+
+  .dark-mode button.accordion {
+    background-color: #222426;
+    color: white;
+    border: 1px solid #555;
+    border-left: none;
+    border-right: none;
+  }
+
+  .accordion.active,
+  .accordion:hover {
+    background-color: #ccc;
+  }
+
+  .dark-mode .accordion.active,
+  .dark-mode .accordion:hover {
+    background-color: #35393B;
+  }
+
+  .panel {
+    padding: 0 6px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+    border-radius: 5px;
+  }
+
+  .dark-mode .panel {
+    background-color: #1B1A1B;
+  }
+
+  .weapon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.5s ease;
+    position: relative;
+  }
+
+  .dark-mode .weapon {
+    background-color: #1B1E1F;
+    border-bottom-color: rgb(58, 62, 65)
+  }
+
+  .collected.weapon {
+    background: #8f8;
+  }
+
+  .dark-mode .collected.weapon {
+    background: #1f7a00;
+  }
+
+  .reset-menu-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+  }
+
+  .reset-menu {
+    padding: 20px;
+    border: 5px solid #f44;
+    border-radius: 5px;
+  }
+
+  .reset-menu-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 30px 0 35px 0;
+  }
+
+  .reset-menu .section-title {
+    text-align: center;
+  }
+
+  .reset-menu button {
+    width: 160px;
+    height: 80px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  .location-name {
+    font-weight: bold;
+  }
+
+  .weapon-name {
+    margin-right: 10px;
+    flex-grow: 1;
+    min-width: 25%;
+    font-weight: bold;
+  }
+
+  .description {
+    font-size: 0.8em;
+    color: #666;
+    text-align: right;
+    flex-grow: 1;
+    max-width: 60%;
+  }
+
+  .dark-mode .description {
+    color: #CCC
+  }
+
+  .rarity-rectangle-weapon {
+    width: 5px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .rarity-rectangle-weapon.right {
+    right: 0;
+    left: inherit;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .common {
+    background-color: #306821;
+  }
+
+  .rare {
+    background-color: #30489b;
+  }
+
+  .epic {
+    background-color: #70166d;
+  }
+
+  .legendary {
+    background-color: #f17e05;
+  }
+
+  .tool {
+    background-color: darkgrey;
+  }
+
+  .dark-mode .common,
+  .dark-mode .rare,
+  .dark-mode .epic {
+    filter: brightness(130%);
+  }
+
+
+  .rarity-indicator {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
+  }
+
+  .rarity-rectangle-location {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    border: 1px outset black;
+  }
+
+  .dark-mode .rarity-rectangle-location {
+    border: 1px outset white;
+  }
+
+  #locations {
+    padding: 1px 0;
+  }
+
+  .rarity-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .button-container button {
+    width: 100px;
+    height: 30px;
+  }
+
+  button {
+    border-radius: 5px;
+    cursor: pointer;
+    background: #eee;
+    border: 1px solid #ccc;
+    color: black;
+  }
+
+  .dark-mode button {
+    background: #444;
+    border: 1px solid #222;
+    color: white;
+  }
+
+  .button-container .reset-btn,
+  .reset-menu-buttons button {
+    background: #f44;
+    border: 1px solid #a44;
+    color: white;
+  }
+
+  .done-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+  }
+
+  #hidden-rarities {
+    color: grey;
+    font-size: 0.9em;
+  }
+
+  .subword {
+    display: inline-block;
+  }
+
+  #collected-count {
+    text-align: center;
+  }
