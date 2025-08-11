@@ -27,12 +27,7 @@
       <div class="filter-menu-container">
         <div class="filter-menu">
           <div class="filters-section">
-            <div class="section-title">Filtering</div>
-            <label><input type="checkbox" id="showCollectedCheckbox" onchange="toggleShowCollected()"> Show Collected
-              Weapons</label>
-          </div>
-          <div class="filters-section">
-            <div class="section-title">Displayed</div>
+            <div class="section-title">Displayed Types</div>
             <label><input type="checkbox" data-rarity="tool" checked onchange="updateRarities()"> Freelancer
               Tools</label>
             <label><input type="checkbox" data-rarity="common" checked onchange="updateRarities()"> Common</label>
@@ -43,6 +38,11 @@
           <div class="filters-section">
             <div class="section-title">UI</div>
             <label><input type="checkbox" id="darkModeCheckbox">Dark Mode</label>
+          </div>
+          <div class="filters-section">
+            <div class="section-title">Filtering</div>
+            <label><input type="checkbox" id="showCollectedCheckbox" onchange="toggleShowCollected()"> Show Collected
+              Weapons</label>
           </div>
         </div>
       </div>
@@ -66,7 +66,6 @@
     <div id="weapons" class="tab-content"></div>
     <div class="done-container tab-content hidden">
       <div>All weapons collected.</div>
-      <div id="hidden-rarities"></div>
       <br>
       <div>Use the <a href="#" class="reset-link" onclick="toggleResetMenu(); return false;">Reset</a> menu to reset.</div>
     </div>
@@ -365,18 +364,7 @@
         collectedWeaponsCount++;
       });
 
-      const hiddenRaritiesElement = document.getElementById('hidden-rarities');
-      let hiddenRarities = [];
-      document.querySelectorAll('[data-rarity]').forEach(checkbox => {
-        if (!checkbox.checked) {
-          hiddenRarities.push(checkbox.dataset.rarity);
-        }
-      });
-      if (hiddenRarities.length > 0) {
-        hiddenRaritiesElement.textContent = `(Hidden: ${hiddenRarities.join(', ')})`;
-      } else {
-        hiddenRaritiesElement.textContent = '';
-      }
+
     }
 
     function toggleShowCollected() {
