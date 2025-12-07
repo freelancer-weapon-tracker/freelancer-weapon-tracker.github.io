@@ -27,7 +27,7 @@ body.dark-mode {
 .container {
   max-width: 800px;
   margin: auto;
-  padding: 4px;
+  padding: 8px;
   flex: 1;
   box-sizing: border-box;
   width: 100%;

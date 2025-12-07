@@ -126,7 +126,7 @@ const locations = {
     },
     {
       "name": "Hackl 9S",
-      "description": "Carried by street guards and facility security guards"
+      "description": "Carried by facility security guards and some street guards"
     },
     {
       "name": "ICA SMG Raptor",
