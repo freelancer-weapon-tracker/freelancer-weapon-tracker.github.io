@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
   <title>Hitman Freelancer Weapon Tracker</title>
   
   <!-- Favicon -->
@@ -715,6 +717,18 @@
       renderWeapons();
     });
 
+    function updateThemeColor(isDark) {
+      // Update theme-color meta tag for status bar
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]:not([media])') || 
+                            document.createElement('meta');
+      themeColorMeta.name = 'theme-color';
+      themeColorMeta.content = isDark ? '#121212' : '#ffffff';
+      
+      if (!themeColorMeta.parentNode) {
+        document.head.appendChild(themeColorMeta);
+      }
+    }
+
     function initializeTheme() {
       const checkbox = document.getElementById('darkModeCheckbox');
 
@@ -722,24 +736,29 @@
       const savedTheme = localStorage.getItem('theme');
 
       if (savedTheme) {
-        document.body.classList.toggle('dark-mode', savedTheme === 'dark');
-        checkbox.checked = (savedTheme === 'dark');
+        const isDark = savedTheme === 'dark';
+        document.body.classList.toggle('dark-mode', isDark);
+        checkbox.checked = isDark;
+        updateThemeColor(isDark);
       } else {
         // Initialize based on system preference
         const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.body.classList.toggle('dark-mode', prefersDarkMode);
         checkbox.checked = prefersDarkMode;
+        updateThemeColor(prefersDarkMode);
       }
 
       // Toggle dark mode based on checkbox
       checkbox.addEventListener('change', function () {
-        if (checkbox.checked) {
+        const isDark = checkbox.checked;
+        if (isDark) {
           document.body.classList.add('dark-mode');
           localStorage.setItem('theme', 'dark');
         } else {
           document.body.classList.remove('dark-mode');
           localStorage.setItem('theme', 'light');
         }
+        updateThemeColor(isDark);
       });
     }
 
