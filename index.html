@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="" id="theme-color-meta">
   <title>Hitman Freelancer Weapon Tracker</title>
   
   <!-- Favicon -->
@@ -717,15 +716,29 @@
       renderWeapons();
     });
 
+    // Initialize theme color immediately based on system preference
+    (function() {
+      const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('theme');
+      let isDark;
+      
+      if (savedTheme) {
+        isDark = savedTheme === 'dark';
+      } else {
+        isDark = prefersDarkMode;
+      }
+      
+      const themeColorMeta = document.getElementById('theme-color-meta');
+      if (themeColorMeta) {
+        themeColorMeta.content = isDark ? '#121212' : '#ffffff';
+      }
+    })();
+
     function updateThemeColor(isDark) {
       // Update theme-color meta tag for status bar
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]:not([media])') || 
-                            document.createElement('meta');
-      themeColorMeta.name = 'theme-color';
-      themeColorMeta.content = isDark ? '#121212' : '#ffffff';
-      
-      if (!themeColorMeta.parentNode) {
-        document.head.appendChild(themeColorMeta);
+      const themeColorMeta = document.getElementById('theme-color-meta');
+      if (themeColorMeta) {
+        themeColorMeta.content = isDark ? '#121212' : '#ffffff';
       }
     }
 
