@@ -1,7 +1,7 @@
 # Hitman Freelancer Tracker
 A simple tool to help you find and track weapons and items in the Freelancer game mode of HITMAN World of Assassination.
 
-Use it here: [Hitman Freelancer Tracker](https://freelancer-weapon-tracker.github.io/)
+Use it here: [Hitman Freelancer Tracker](https://hitman-freelancer-tracker.github.io/)
 
 Tip: For the best experience, access the tool from your mobile phone.
 
